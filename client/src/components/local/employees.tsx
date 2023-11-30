@@ -1,4 +1,4 @@
-import { Trash } from "lucide-react";
+import { CalendarIcon, Trash } from "lucide-react";
 import { Button } from "../ui/button";
 import {
   Table,
@@ -41,6 +41,10 @@ import {
 } from "../ui/select";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { format } from "date-fns";
+import { cn } from "../../lib/utils";
+import { Calendar } from "../ui/calendar";
 
 interface EmployeeState {
   userId: number;
@@ -147,6 +151,7 @@ export function AddEmployeeComponent(props: AddEmployeeComponentProps) {
       .string({ required_error: "Department is required" })
       .min(1)
       .max(25),
+    dob: z.date(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -166,6 +171,7 @@ export function AddEmployeeComponent(props: AddEmployeeComponentProps) {
       password: form.getValues().password,
       role: form.getValues().role,
       name: form.getValues().name,
+      birthDate: form.getValues().dob,
       departmentId: parseInt(form.getValues().department),
     };
 
@@ -225,6 +231,45 @@ export function AddEmployeeComponent(props: AddEmployeeComponentProps) {
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="dob"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Date of birth</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-[240px] pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP")
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      onSelect={field.onChange}
+                      selected={field.value}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
                 <FormMessage />
               </FormItem>
             )}

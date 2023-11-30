@@ -74,19 +74,15 @@ export default function Header() {
       </div>
 
       <div className="flex space-x-4">
-        {user?.nickname !== "admin" ? (
-          <Button
-            variant={isCheckedIn ? "secondary" : "outline"}
-            onClick={() => {
-              onCheckInOut();
-              setCheckedIn(!isCheckedIn);
-            }}
-          >
-            Check {isCheckedIn ? "Out" : "In"}
-          </Button>
-        ) : (
-          <></>
-        )}
+        <Button
+          variant={isCheckedIn ? "secondary" : "outline"}
+          onClick={() => {
+            onCheckInOut();
+            setCheckedIn(!isCheckedIn);
+          }}
+        >
+          Check {isCheckedIn ? "Out" : "In"}
+        </Button>
 
         <Button
           variant="destructive"

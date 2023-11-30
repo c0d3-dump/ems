@@ -105,6 +105,7 @@ namespace ems.Controllers
         Role = addUserRequest.Role,
         Name = addUserRequest.Name,
         JoiningDate = DateTime.Now,
+        BirthDate = addUserRequest.BirthDate,
         DepartmentId = addUserRequest.DepartmentId
       };
 
