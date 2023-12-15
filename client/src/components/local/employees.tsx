@@ -28,7 +28,6 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
-import { useAuth0 } from "@auth0/auth0-react";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { env } from "../../config";
@@ -55,9 +54,25 @@ interface EmployeeState {
   };
 }
 
+export interface UserState {
+  email: string;
+  role: string;
+}
+
 export default function Employees() {
-  const { user } = useAuth0();
   const [employeeData, setEmployeeData] = useState<EmployeeState[]>();
+  const [user, setUser] = useState<UserState>();
+
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+      if (user) {
+        setUser(user);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   const fetchEmployees = useCallback(() => {
     axios.get(`${env.SERVER_URL}/api/Users`).then((res) => {
@@ -66,8 +81,10 @@ export default function Employees() {
   }, []);
 
   useEffect(() => {
-    fetchEmployees();
-  }, [fetchEmployees]);
+    if (user?.email) {
+      fetchEmployees();
+    }
+  }, [fetchEmployees, user?.email]);
 
   const ondeleteEmployee = useCallback(
     (employeeId: number) => {
@@ -82,7 +99,7 @@ export default function Employees() {
     <>
       <Header></Header>
 
-      {user?.nickname === "admin" ? (
+      {user?.role === "admin" ? (
         <div className="flex justify-end mb-6">
           <AddEmployeeComponent
             fetchEmployees={fetchEmployees}
@@ -114,7 +131,7 @@ export default function Employees() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={user?.nickname !== "admin"}
+                    disabled={user?.role !== "admin"}
                     onClick={() => ondeleteEmployee(employee.userId)}
                   >
                     <Trash></Trash>

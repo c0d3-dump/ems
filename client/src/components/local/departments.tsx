@@ -9,7 +9,6 @@ import {
   TableRow,
 } from "../ui/table";
 import Header from "./header";
-import { useAuth0 } from "@auth0/auth0-react";
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { env } from "../../config";
@@ -32,6 +31,7 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+import { UserState } from "./employees";
 
 interface DepartmentState {
   departmentId: number;
@@ -39,8 +39,19 @@ interface DepartmentState {
 }
 
 export default function Departments() {
-  const { user } = useAuth0();
   const [departmentData, setDepartmentData] = useState<DepartmentState[]>();
+  const [user, setUser] = useState<UserState>();
+
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+      if (user) {
+        setUser(user);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   const fetchDepartments = useCallback(() => {
     axios.get(`${env.SERVER_URL}/api/Departments`).then((res) => {
@@ -49,8 +60,10 @@ export default function Departments() {
   }, []);
 
   useEffect(() => {
-    fetchDepartments();
-  }, [fetchDepartments]);
+    if (user?.email) {
+      fetchDepartments();
+    }
+  }, [fetchDepartments, user?.email]);
 
   const ondeleteDepartment = useCallback(
     (departmentId: number) => {
@@ -67,7 +80,7 @@ export default function Departments() {
     <>
       <Header></Header>
 
-      {user?.nickname === "admin" ? (
+      {user?.role === "admin" ? (
         <div className="flex justify-end mb-6">
           <AddDepartmentComponent
             fetchDepartments={fetchDepartments}
@@ -95,7 +108,7 @@ export default function Departments() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    disabled={user?.nickname !== "admin"}
+                    disabled={user?.role !== "admin"}
                     onClick={() => ondeleteDepartment(department.departmentId)}
                   >
                     <Trash></Trash>

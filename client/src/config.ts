@@ -1,5 +1,3 @@
 export const env = {
-  SERVER_URL: "",
-  domain: "",
-  clientId: ""
+  SERVER_URL: "http://localhost:5105",
 };

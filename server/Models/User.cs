@@ -1,11 +1,10 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace ems.Models
 {
   public class User
   {
     public int UserId { get; set; }
     public required string Email { get; set; }
+    public required string Password { get; set; }
     public required string Role { get; set; }
     public int DepartmentId { get; set; }
     public required DateTime JoiningDate { get; set; }

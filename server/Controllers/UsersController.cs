@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Auth0.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
 
 namespace ems.Controllers
 {
   [ApiController]
   [Route("api/[controller]")]
-  public class UsersController(Database database, IConfiguration configuration) : Controller
+  public class UsersController(Database database) : Controller
   {
     private readonly Database database = database;
 
@@ -87,21 +88,10 @@ namespace ems.Controllers
     [HttpPost]
     public async Task<IActionResult> AddUser(AddUserRequest addUserRequest)
     {
-      var client = new HttpClient();
-      var request = new HttpRequestMessage(HttpMethod.Post, configuration.GetSection("Auth0")["ManagementHost"] + "/api/v2/users");
-      request.Headers.Add("Accept", "application/json");
-      request.Headers.Add("Authorization", "Bearer " + configuration.GetSection("Auth0")["ManagementSecret"]);
-
-      var data = "{\"email\":\"" + addUserRequest.Email + "\",\"nickname\":\"" + addUserRequest.Role + "\",\"connection\":\"Username-Password-Authentication\",\"password\":\"" + addUserRequest.Password + "\"}";
-      var content = new StringContent(data, null, "application/json");
-
-      request.Content = content;
-      var response = await client.SendAsync(request);
-      response.EnsureSuccessStatusCode();
-
       var newUser = new User()
       {
         Email = addUserRequest.Email,
+        Password = addUserRequest.Password,
         Role = addUserRequest.Role,
         Name = addUserRequest.Name,
         JoiningDate = DateTime.Now,
@@ -113,6 +103,19 @@ namespace ems.Controllers
       await database.SaveChangesAsync();
 
       return Ok(newUser);
+    }
+
+    [HttpPost]
+    [Route("login")]
+    public async Task<IActionResult> LoginUser(LoginUserRequest loginUserRequest)
+    {
+      var user = await database.Users.Where(u => u.Email == loginUserRequest.Email).FirstAsync();
+
+      if (user != null && user.Password == loginUserRequest.Password)
+      {
+        return Ok(user);
+      }
+      return NotFound();
     }
 
 

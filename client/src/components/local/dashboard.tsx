@@ -4,7 +4,7 @@ import Header from "./header";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { env } from "../../config";
-import { useAuth0 } from "@auth0/auth0-react";
+import { UserState } from "./employees";
 
 interface StatisticsState {
   totalUsers: number;
@@ -19,18 +19,31 @@ interface AttendanceState {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth0();
   const [statistics, setStatistics] = useState<StatisticsState>();
   const [attendanceData, setAttendanceData] = useState<AttendanceState[]>();
+  const [user, setUser] = useState<UserState>();
 
   useEffect(() => {
-    axios.get(`${env.SERVER_URL}/api/Users/${user?.email}`).then((res) => {
-      setAttendanceData(res.data.attendanceDatas);
-    });
+    try {
+      const user = JSON.parse(localStorage.getItem("user") ?? "{}");
+      if (user) {
+        setUser(user);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
-    axios.get(`${env.SERVER_URL}/api/Users/statistics`).then((res) => {
-      setStatistics(res.data);
-    });
+  useEffect(() => {
+    if (user?.email) {
+      axios.get(`${env.SERVER_URL}/api/Users/${user?.email}`).then((res) => {
+        setAttendanceData(res.data.attendanceDatas);
+      });
+
+      axios.get(`${env.SERVER_URL}/api/Users/statistics`).then((res) => {
+        setStatistics(res.data);
+      });
+    }
   }, [user?.email]);
 
   return (

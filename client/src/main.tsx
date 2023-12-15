@@ -30,8 +30,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       }}
       cacheLocation="localstorage"
     >
-      =
-      <App />=
+      <App />
     </Auth0Provider>
   </React.StrictMode>
 );
